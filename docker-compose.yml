@@ -1,0 +1,23 @@
+services:
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "5050:5050"
+
+  tracking-service:
+    build: ./tracking-service
+    ports:
+      - "5051:5051"
+    depends_on:
+      - auth-service
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+  analytics-service:
+    build: ./analytics-service
+    ports:
+      - "5052:5052"
+    depends_on:
+      - tracking-service
+    environment:
+      SPRING_PROFILES_ACTIVE: docker

@@ -1,0 +1,9 @@
+[submodule "auth-service"]
+	path = auth-service
+	url = https://github.com/codekesh/auth-service.git
+[submodule "tracking-service"]
+	path = tracking-service
+	url = https://github.com/codekesh/tracking-service.git
+[submodule "analytics-service"]
+	path = analytics-service
+	url = https://github.com/codekesh/analytics-service.git
