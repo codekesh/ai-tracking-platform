@@ -7,3 +7,6 @@
 [submodule "analytics-service"]
 	path = analytics-service
 	url = https://github.com/codekesh/analytics-service.git
+[submodule "frontend"]
+	path = frontend
+	url = git@github.com:codekesh/ai-tracking-frontend.git
