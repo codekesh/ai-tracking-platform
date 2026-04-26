@@ -13,3 +13,6 @@
 [submodule "ai-service"]
 	path = ai-service
 	url = https://github.com/codekesh/AI-Chatbot
+[submodule "api-gateway"]
+	path = api-gateway
+	url = https://github.com/codekesh/AIplatform-Api-Gateway.git
