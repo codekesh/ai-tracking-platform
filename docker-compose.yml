@@ -1,23 +1,109 @@
 services:
+  # ---------------- AUTH SERVICE ----------------
   auth-service:
     build: ./auth-service
+    container_name: auth-service
     ports:
-      - "5050:5050"
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-auth:5432/auth_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+    depends_on:
+      - postgres-auth
 
+  postgres-auth:
+    image: postgres:15
+    container_name: postgres-auth
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432"
+    volumes:
+      - auth-data:/var/lib/postgresql/data
+
+  # ---------------- TRACKING SERVICE ----------------
   tracking-service:
     build: ./tracking-service
+    container_name: tracking-service
     ports:
-      - "5051:5051"
-    depends_on:
-      - auth-service
+      - "8081:8080"
     environment:
-      SPRING_PROFILES_ACTIVE: docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-tracking:5432/tracking_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+      - AUTH_SERVICE_URL=http://auth-service:8080
+      - AI_SERVICE_URL=http://ai-service:8080
+    depends_on:
+      - postgres-tracking
+      - auth-service
+      - ai-service
 
+  postgres-tracking:
+    image: postgres:15
+    container_name: postgres-tracking
+    environment:
+      POSTGRES_DB: tracking_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5434:5432"
+    volumes:
+      - tracking-data:/var/lib/postgresql/data
+
+  # ---------------- AI SERVICE ----------------
+  ai-service:
+    build: ./ai-service
+    container_name: ai-service
+    ports:
+      - "8083:8080"
+
+  # ---------------- ANALYTICS SERVICE ----------------
   analytics-service:
     build: ./analytics-service
+    container_name: analytics-service
     ports:
-      - "5052:5052"
+      - "8082:8080"
+    environment:
+      - TRACKING_SERVICE_URL=http://tracking-service:8080
     depends_on:
       - tracking-service
+
+  # ---------------- FRONTEND ----------------
+  frontend:
+    build:
+      context: ./ai-tracking-frontend
+      args:
+        VITE_API_URL: http://localhost:9000
+        VITE_AUTH_API_URL: http://auth-service:8080
+        VITE_TRACKING_API_URL: http://tracking-service:8080
+        VITE_ANALYTICS_API_URL: http://analytics-service:8080
+        VITE_AI_CHAT_API_URL: http://ai-service:8080
+    container_name: frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - auth-service
+      - tracking-service
+      - analytics-service
+      - ai-service
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "9000:9000"
     environment:
-      SPRING_PROFILES_ACTIVE: docker
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - auth-service
+      - tracking-service
+      - ai-service
+      - analytics-service
+    
+# ---------------- VOLUMES ----------------
+volumes:
+  auth-data:
+  tracking-data:
